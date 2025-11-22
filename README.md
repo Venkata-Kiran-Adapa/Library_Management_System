@@ -23,34 +23,34 @@ Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)\
 
 ### 🔐 Authentication & Authorization
 
--   JWT-based authentication\
--   Login & Signup APIs\
--   Role support (ADMIN, MEMBER)\
+-   JWT-based authentication
+-   Login & Signup APIs
+-   Role support (ADMIN, MEMBER)
 -   Protected routes
 
 ### 👤 User Management
 
--   CRUD operations for users\
--   Fetch user by email\
+-   CRUD operations for users
+-   Fetch user by email
 -   Update user role
 
 ### 📘 Book Management
 
--   Add and manage books\
--   Search by ID, ISBN, genre, author\
+-   Add and manage books
+-   Search by ID, ISBN, genre, author
 -   Update and delete books
 
 ### 📖 Borrow Records
 
--   Issue and return books\
--   Track due & return dates\
--   Manage fines\
+-   Issue and return books
+-   Track due & return dates
+-   Manage fines
 -   Update or delete records
 
 ### 📝 Reservations
 
--   Reserve books\
--   Modify or cancel reservations\
+-   Reserve books
+-   Modify or cancel reservations
 -   View reservation details
 
 ------------------------------------------------------------------------
@@ -94,66 +94,143 @@ Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)\
             └───────────────┘         └────────────────┘
 
 ------------------------------------------------------------------------
+## 🔒 User Roles & Permissions
+
+The system implements **Role-Based Access Control (RBAC)** with three roles:
+
+- **ADMIN**
+- **LIBRARIAN**
+- **MEMBER**
+
+Below are the exact permissions based on the Spring Security configuration.
+
+---
+
+## 🛡️ ADMIN (Full Access)
+
+Admins have unrestricted access across all resources.
+
+### ✅ ADMIN Can:
+- Add, update, and delete books  
+- Add and update borrow records  
+- Add and update reservations  
+- Manage all users (update, delete, view)  
+- Access all GET endpoints  
+- Delete any resource (`DELETE /api/**`)  
+- Create any resource (`POST /api/**`)  
+- Update any resource (`PATCH /api/**`)  
+
+---
+
+## 📚 LIBRARIAN (Book & Record Manager)
+
+Librarians can manage books, borrow records, and reservations, but **cannot modify users or delete anything**.
+
+### ✅ LIBRARIAN Can:
+- GET all books (`GET /api/book/**`)
+- GET any resource (`GET /api/**`)
+- Add books, borrow records, reservations (`POST /api/**`)
+- Update books, borrow records, reservations (`PATCH /api/book`, `/api/borrowRecords`, `/api/reservation`)
+
+### ❌ LIBRARIAN Cannot:
+- Delete anything (`DELETE /api/**`)
+- Update users (`PATCH /api/user/**`)
+- Manage user accounts  
+
+---
+
+## 👤 MEMBER (Reader)
+
+Members have view-only access to most resources except for books.
+
+### ✅ MEMBER Can:
+- View all books (`GET /api/book/**`)  
+
+### ❌ MEMBER Cannot:
+- Add, update, or delete books  
+- Access GET `/api/**` for other modules  
+- Post anything (`POST /api/**`)
+- Update anything (`PATCH /api/**`)
+- Delete anything (`DELETE /api/**`)
+
+---
+
+## 🔍 Summary Permissions Table
+
+| Action | ADMIN | LIBRARIAN | MEMBER |
+|--------|:-----:|:---------:|:------:|
+| View Books (`GET /api/book/**`) | ✔️ | ✔️ | ✔️ |
+| View Other Resources (`GET /api/**`) | ✔️ | ✔️ | ❌ |
+| Create Resources (`POST /api/**`) | ✔️ | ✔️ | ❌ |
+| Update Books/Records/Reservations (`PATCH /api/book`, `/api/borrowRecords`, `/api/reservation`) | ✔️ | ✔️ | ❌ |
+| Update Users (`PATCH /api/user/**`) | ✔️ | ❌ | ❌ |
+| Delete Any Resource (`DELETE /api/**`) | ✔️ | ❌ | ❌ |
+| Authentication Routes (`/api/authenticate/**`) | ✔️ | ✔️ | ✔️ |
+
+---
+
+## 🔐 Notes  
+- All roles must authenticate except for `/api/authenticate/**`.  
+- JWT token is required for all protected routes.  
+
+
 
 # 📌 API Documentation
 
 ## 🔐 Authentication APIs
 
-  Method   Endpoint                     Description
-  -------- ---------------------------- ----------------------
-  POST     `/api/authenticate/signup`   Register new user
-  POST     `/api/authenticate/login`    Login & generate JWT
+| Method | Endpoint                     | Description           |
+|--------|------------------------------|------------------------|
+| POST   | /api/authenticate/signup     | Register new user     |
+| POST   | /api/authenticate/login      | Login & generate JWT  |
 
-------------------------------------------------------------------------
 
 ## 👤 User APIs
 
-  Method   Endpoint                    Description
-  -------- --------------------------- -------------------
-  GET      `/api/user/{id}`            Get user by ID
-  GET      `/api/user`                 Get all users
-  GET      `/api/user/email/{email}`   Get user by email
-  PATCH    `/api/user/{id}`            Modify user
-  DELETE   `/api/user/{id}`            Delete user
+| Method | Endpoint                      | Description          |
+|--------|-------------------------------|----------------------|
+| GET    | /api/user/{id}                | Get user by ID       |
+| GET    | /api/user                     | Get all users        |
+| GET    | /api/user/email/{email}       | Get user by email    |
+| PATCH  | /api/user/{id}                | Modify user          |
+| DELETE | /api/user/{id}                | Delete user          |
 
-------------------------------------------------------------------------
 
 ## 📘 Book APIs
 
-  Method   Endpoint                          Description
-  -------- --------------------------------- -----------------
-  GET      `/api/book/{id}`                  Get book by ID
-  GET      `/api/book`                       Get all books
-  GET      `/api/book/isbn/{isbn}`           Book by ISBN
-  GET      `/api/book/category/{category}`   Books by genre
-  GET      `/api/book/author/{author}`       Books by author
-  POST     `/api/book`                       Add new book
-  PATCH    `/api/book/{id}`                  Modify book
-  DELETE   `/api/book/{id}`                  Delete book
+| Method | Endpoint                          | Description        |
+|--------|-----------------------------------|--------------------|
+| GET    | /api/book/{id}                    | Get book by ID     |
+| GET    | /api/book                         | Get all books      |
+| GET    | /api/book/isbn/{isbn}             | Book by ISBN       |
+| GET    | /api/book/category/{category}     | Books by genre     |
+| GET    | /api/book/author/{author}         | Books by author    |
+| POST   | /api/book                         | Add new book       |
+| PATCH  | /api/book/{id}                    | Modify book        |
+| DELETE | /api/book/{id}                    | Delete book        |
 
-------------------------------------------------------------------------
 
 ## 📖 Borrow Record APIs
 
-  Method   Endpoint                    Description
-  -------- --------------------------- -------------------
-  GET      `/api/borrowRecords/{id}`   Get borrow record
-  GET      `/api/borrowRecords`        Get all records
-  POST     `/api/borrowRecords`        Add new record
-  PATCH    `/api/borrowRecords/{id}`   Modify record
-  DELETE   `/api/borrowRecords/{id}`   Delete record
+| Method | Endpoint                          | Description           |
+|--------|-----------------------------------|------------------------|
+| GET    | /api/borrowRecords/{id}           | Get borrow record     |
+| GET    | /api/borrowRecords                | Get all records       |
+| POST   | /api/borrowRecords                | Add new record        |
+| PATCH  | /api/borrowRecords/{id}           | Modify record         |
+| DELETE | /api/borrowRecords/{id}           | Delete record         |
 
-------------------------------------------------------------------------
 
 ## 📝 Reservation APIs
 
-  Method   Endpoint                  Description
-  -------- ------------------------- ----------------------
-  GET      `/api/reservation/{id}`   Get reservation
-  GET      `/api/reservation`        Get all reservations
-  POST     `/api/reservation`        Add reservation
-  PATCH    `/api/reservation/{id}`   Modify reservation
-  DELETE   `/api/reservation/{id}`   Delete reservation
+| Method | Endpoint                          | Description           |
+|--------|-----------------------------------|------------------------|
+| GET    | /api/reservation/{id}             | Get reservation       |
+| GET    | /api/reservation                  | Get all reservations  |
+| POST   | /api/reservation                  | Add reservation       |
+| PATCH  | /api/reservation/{id}             | Modify reservation    |
+| DELETE | /api/reservation/{id}             | Delete reservation    |
+
 
 ------------------------------------------------------------------------
 
@@ -234,17 +311,3 @@ Use the included file:
 
 ------------------------------------------------------------------------
 
-# ⭐ Future Enhancements
-
--   Auto fine calculation\
--   Email notifications\
--   Role-based access improvements\
--   Analytics dashboard\
--   Pagination & sorting
-
-------------------------------------------------------------------------
-
-# ✨ Author
-
-**Venkata Kiran Adapa**\
-Full Stack Developer \| Java \| Spring Boot \| SQL
