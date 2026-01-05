@@ -29,7 +29,6 @@ public class BookService {
     }
 
     public Optional<Books> getBookByIsBn(String isbn) throws NotFoundException {
-
         Optional<Books> book=booksRepo.findByIsbn(isbn);
         if(book.isEmpty()){
             throw new NotFoundException("Book With IsBn: "+isbn+" is not Found");
@@ -40,12 +39,17 @@ public class BookService {
     public List<Books> getAllBooks(){
         return booksRepo.findAll();
     }
-
+     
+    public List<Books> getAllAvailableBooks(){
+    	 return booksRepo.findByAvailableTrue();
+    }
+     
+    
     public Books addBook(@RequestBody Books book){
         return booksRepo.save(book);
     }
 
-    public Books modifyUser(long id, Map<String,Object> partialBook) throws NotFoundException {
+    public Books modifyBook(long id, Map<String,Object> partialBook) throws NotFoundException {
         Optional<Books> book=booksRepo.findById(id);
         if(book.isEmpty()){
             throw new NotFoundException("User With Id: "+id+" is not Found");
@@ -66,7 +70,7 @@ public class BookService {
         return objectMapper.convertValue(tempObjectNode, Books.class);
     }
 
-    public Optional<Books> deleteUserById(long id) throws NotFoundException {
+    public Optional<Books> deleteBookById(long id) throws NotFoundException {
         if(booksRepo.existsById(id)) {
             Optional<Books> book = booksRepo.findById(id);
             booksRepo.deleteById(id);

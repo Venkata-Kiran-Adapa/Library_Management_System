@@ -5,22 +5,25 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 import com.Library_Management_System.DTOs.UserDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long reservation_id;
 
     @ManyToOne
+    @JoinColumn(name="user_id")
+    @JsonIgnore
     private Users user;
 
     public Reservation() {
     }
 
     public Reservation(Long id, Users user, Books book, LocalDate reservationDate) {
-        this.id = id;
+        this.reservation_id = id;
         this.user = user;
         this.book = book;
         this.reservationDate = reservationDate;
@@ -35,11 +38,11 @@ public class Reservation {
     }
 
     public Long getId() {
-        return id;
+        return reservation_id;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.reservation_id = id;
     }
 
     public Users getUser() {
@@ -61,6 +64,12 @@ public class Reservation {
     @ManyToOne
     private Books book;
 
-    private LocalDate reservationDate;
+    @Override
+	public String toString() {
+		return "Reservation [id=" + reservation_id + ", user=" + user + ", book=" + book + ", reservationDate=" + reservationDate
+				+ "]";
+	}
+
+	private LocalDate reservationDate;
 
 }

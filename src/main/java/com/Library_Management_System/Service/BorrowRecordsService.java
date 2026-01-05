@@ -1,7 +1,6 @@
 package com.Library_Management_System.Service;
 
 import com.Library_Management_System.DTOs.BorrowRecordsDTO;
-import com.Library_Management_System.DTOs.UserDTO;
 import com.Library_Management_System.Entity.Books;
 import com.Library_Management_System.Entity.BorrowRecords;
 import com.Library_Management_System.Entity.Users;
@@ -13,23 +12,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
 @Service
 public class BorrowRecordsService {
+	
     @Autowired
     BorrowRecordsRepo borrowRecordsRepo;
+    
+    @Autowired
+    BookService bookService;
+    
     @Autowired
     ObjectMapper objectMapper;
     
     @Autowired
     private UsersRepo usersRepository;
-
+    
+    @Autowired
+    private UserService userService;  
+    
     @Autowired
     private BooksRepo booksRepository;
 
@@ -45,31 +51,36 @@ public class BorrowRecordsService {
         		.stream()
         		.map(BorrowRecordsDTO::new)
         		.toList();
-        
     }
-
-
-    public BorrowRecordsDTO addNewRecord(Long userId, Long bookId, LocalDate issueDate, LocalDate dueDate) throws NotFoundException {
+    
+    public BorrowRecordsDTO addNewRecord(Long userId, Long bookId,LocalDate reservationDate) throws NotFoundException {
         Users user = usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         Books book = booksRepository.findById(bookId).orElseThrow(() -> new NotFoundException("Book not found"));
         BorrowRecords record = new BorrowRecords();
         record.setUser(user);
+        if(!book.getBook_availability()) {
+        	throw new NotFoundException("Book is not available");
+        }
         record.setBook(book);
-        record.setIssueDate(issueDate);
-        record.setDueDate(dueDate);
+        record.setIssueDate(reservationDate);
+        record.setDueDate(reservationDate.plusDays(15));
         record.setReturnDate(null);
         record.setFineAmount(0);
+        book.setBook_availability(false);
+        booksRepository.save(book);
         BorrowRecords savedRecords=borrowRecordsRepo.save(record);
+        Map<String, Object> saveInUser=new HashMap<String, Object>();
+        saveInUser.put("borrowRecords",record);
+        userService.modifyUser(user.getUser_id(), saveInUser);        
         return new BorrowRecordsDTO(savedRecords);
     }
 
-    
     public BorrowRecordsDTO modifyRecord(Long id, Map<String, Object> partialRecord) throws NotFoundException {
-        Optional<BorrowRecords> records = borrowRecordsRepo.findById(id);
-        if (records.isEmpty()) {
+    	BorrowRecords existingRecord  = borrowRecordsRepo.findById(id).get();
+        if (existingRecord==null) {
             throw new NotFoundException("Record With Id: " + id + " is not Found");
         }
-        BorrowRecords existingRecord = records.get();
+        Users users=existingRecord.getUser();
         if (partialRecord.containsKey("userId")) {
             Object userIdObj = partialRecord.get("userId");
             Long userId = ((Number) userIdObj).longValue(); 
@@ -86,8 +97,8 @@ public class BorrowRecordsService {
             existingRecord.setBook(book);
             partialRecord.remove("bookId");
         }
-        
         BorrowRecords patchedRecord = apply(existingRecord, partialRecord);
+        patchedRecord.setUser(users);
         BorrowRecords savedRecords=borrowRecordsRepo.save(patchedRecord);
         BorrowRecordsDTO dbRecordsDTO=new BorrowRecordsDTO(savedRecords);
         return dbRecordsDTO;
@@ -99,7 +110,6 @@ public class BorrowRecordsService {
         tempObjectNode.setAll(patchPayLoadNode);
         return objectMapper.convertValue(tempObjectNode, BorrowRecords.class);
     }
-    
 
     public Optional<BorrowRecordsDTO> deleteRecordById(long id) throws NotFoundException {
         if(borrowRecordsRepo.existsById(id)) {
@@ -108,5 +118,9 @@ public class BorrowRecordsService {
             return record;
         }
         throw new NotFoundException("Record With Id: "+id+" is not Found");
+    }
+    
+    public void changeReturnDate(long user_id,long book_id) throws NotFoundException{
+    	borrowRecordsRepo.updateReturnDate(user_id,book_id,LocalDate.now());
     }
 }

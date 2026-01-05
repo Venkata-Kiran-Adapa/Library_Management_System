@@ -7,6 +7,7 @@ import com.Library_Management_System.Exception_Handling.NotFoundException;
 import com.Library_Management_System.Repository.BooksRepo;
 import com.Library_Management_System.Service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.web.webauthn.api.PublicKeyCose;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,6 +54,11 @@ public class BooksController {
         return bookService.getAllBooks();
     }
 
+    @GetMapping("/availableBooks")
+    public List<Books> getAllAvailableBooks(){
+        return bookService.getAllAvailableBooks();
+    }
+    
     @Transactional
     @PostMapping("")
     public Books addBook(@RequestBody Books book){
@@ -61,13 +67,13 @@ public class BooksController {
 
     @Transactional
     @PatchMapping("/{id}")
-    public Books modifyUser(@PathVariable long id ,@RequestBody Map<String,Object> partialBook)throws NotFoundException {
-        return bookService.modifyUser(id,partialBook);
+    public Books modifyBook(@PathVariable long id ,@RequestBody Map<String,Object> partialBook)throws NotFoundException {
+        return bookService.modifyBook(id,partialBook);
     }
 
     @Transactional
     @DeleteMapping("/{id}")
-    public Optional<Books> deleteUserById(@PathVariable long id) throws NotFoundException {
-        return bookService.deleteUserById(id);
+    public Optional<Books> deleteBookById(@PathVariable long id) throws NotFoundException {
+        return bookService.deleteBookById(id);
     }
 }

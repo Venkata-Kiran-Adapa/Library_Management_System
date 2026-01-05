@@ -1,6 +1,9 @@
 package com.Library_Management_System.Service;
 
 import com.Library_Management_System.DTOs.UserDTO;
+import com.Library_Management_System.Entity.Books;
+import com.Library_Management_System.Entity.BorrowRecords;
+import com.Library_Management_System.Entity.Reservation;
 import com.Library_Management_System.Entity.Users;
 import com.Library_Management_System.Enums.Role;
 import com.Library_Management_System.Exception_Handling.NotFoundException;
@@ -48,14 +51,39 @@ public class UserService {
     }
 
     public UserDTO modifyUser(long id, Map<String,Object>  partialUser) throws NotFoundException {
-        Optional<UserDTO> user=usersRepo.findById(id).map(UserDTO::new);
+         Optional<Users> user=usersRepo.findById(id);
         if(user.isEmpty()){
             throw new NotFoundException("User With Id: "+id+" is not Found");
         }
         if(partialUser.containsKey("user_id")){
             throw new NotFoundException("Primary Key Changing Error - Custom One");
         }
-        Users patchedUser=apply(user,partialUser);
+        if(partialUser.containsKey("borrowRecords")) {
+        	BorrowRecords borrowRecords=(BorrowRecords) partialUser.get("borrowRecords");
+        	partialUser.remove("borrowRecords");
+            Users patchedUser=user.get();
+            patchedUser.setBorrowRecords(borrowRecords);
+            Users savedUser = usersRepo.save(patchedUser);
+            UserDTO dbUser=new UserDTO(savedUser);
+            return dbUser;
+        }else if(partialUser.containsKey("reservationRecords")) {
+        	Reservation reservationRecords=(Reservation) partialUser.get("reservationRecords");
+        	partialUser.remove("reservationRecords");
+            Users patchedUser=user.get();
+            patchedUser.setReservation(reservationRecords);
+            Users savedUser = usersRepo.save(patchedUser);
+            UserDTO dbUser=new UserDTO(savedUser);
+            return dbUser;
+        }else if(partialUser.containsKey("booksRecords")) {
+        	Books booksRecords=(Books) partialUser.get("booksRecords");
+        	partialUser.remove("booksRecords");
+            Users patchedUser=user.get();
+            patchedUser.setBooks(booksRecords);
+            Users savedUser = usersRepo.save(patchedUser);
+            UserDTO dbUser=new UserDTO(savedUser);
+            return dbUser;
+        }
+        Users patchedUser=apply(user.map(UserDTO::new),partialUser);
         Users savedUser = usersRepo.save(patchedUser);
         UserDTO dbUser=new UserDTO(savedUser);
         return dbUser;

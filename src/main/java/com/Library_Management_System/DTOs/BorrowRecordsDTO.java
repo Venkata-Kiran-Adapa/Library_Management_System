@@ -10,14 +10,14 @@ public class BorrowRecordsDTO {
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
         @ManyToOne
-        private UserDTO user;
+        private UserRecordsDTO user;
         @ManyToOne
-        private Books book;
+        private BookRecordsDTO book;
 
     public BorrowRecordsDTO(BorrowRecords borrowRecords) {
         this.id = borrowRecords.getId();
-        this.user = new UserDTO(borrowRecords.getUser());
-        this.book = borrowRecords.getBook();
+        this.user = new UserRecordsDTO(borrowRecords.getUser());
+        this.book = new BookRecordsDTO(borrowRecords.getBook().getBook_id(), borrowRecords.getBook().getBook_title(),borrowRecords.getBook().getBook_author());
         this.issueDate = borrowRecords.getIssueDate();
         this.dueDate = borrowRecords.getDueDate();
         this.returnDate = borrowRecords.getReturnDate();
@@ -35,19 +35,19 @@ public class BorrowRecordsDTO {
         this.id = id;
     }
 
-    public UserDTO getUser() {
+    public UserRecordsDTO getUser() {
         return user;
     }
 
-    public void setUser(UserDTO user) {
+    public void setUser(UserRecordsDTO user) {
         this.user = user;
     }
 
-    public Books getBook() {
+    public BookRecordsDTO getBook() {
         return book;
     }
 
-    public void setBook(Books book) {
+    public void setBook(BookRecordsDTO book) {
         this.book = book;
     }
 

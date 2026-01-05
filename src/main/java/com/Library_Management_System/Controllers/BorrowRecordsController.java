@@ -9,6 +9,7 @@ import com.Library_Management_System.Service.BorrowRecordsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,8 +22,8 @@ public class BorrowRecordsController {
     BorrowRecordsService borrowRecordsService;
 
     @GetMapping("/{id}")
-    public Optional<BorrowRecordsDTO> getById(@PathVariable Long id) throws NotFoundException{
-        return borrowRecordsService.getById(id);
+    public BorrowRecordsDTO getById(@PathVariable Long id) throws NotFoundException{
+        return borrowRecordsService.getById(id).get();
     }
 
     @GetMapping("")
@@ -33,7 +34,7 @@ public class BorrowRecordsController {
     
     @PostMapping("")
     public BorrowRecordsDTO addNewRecord(@RequestBody BorrowRecordsRequest request) throws NotFoundException{
-        return borrowRecordsService.addNewRecord(request.userId, request.bookId, request.issueDate, request.dueDate);
+        return borrowRecordsService.addNewRecord(request.userId, request.bookId,LocalDate.now());
     }
 
     @PatchMapping("/{id}")
@@ -42,8 +43,8 @@ public class BorrowRecordsController {
     }
 
     @DeleteMapping("/{id}")
-    public Optional<BorrowRecordsDTO> deleteRecordById(@PathVariable Long id) throws NotFoundException {
-        return borrowRecordsService.deleteRecordById(id);
+    public BorrowRecordsDTO deleteRecordById(@PathVariable Long id) throws NotFoundException {
+        return borrowRecordsService.deleteRecordById(id).get();
     }
 
 

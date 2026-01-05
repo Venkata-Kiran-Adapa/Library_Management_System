@@ -17,23 +17,23 @@ public class ReservationDTO {
     private Long id;
 
     @ManyToOne
-    private UserDTO user;
+    private UserRecordsDTO user;
 
     public ReservationDTO() {
     }
 
     public ReservationDTO(Reservation reservation) {
         this.id = reservation.getId();
-        this.user = new UserDTO(reservation.getUser());
-        this.book = reservation.getBook();
+        this.user = new UserRecordsDTO(reservation.getUser());
+        this.book = new BookRecordsDTO(reservation.getBook().getBook_id(),reservation.getBook().getBook_title(),reservation.getBook().getBook_author());
         this.reservationDate = reservation.getReservationDate();
     }
 
-    public Books getBook() {
+    public BookRecordsDTO getBook() {
         return book;
     }
 
-    public void setBook(Books book) {
+    public void setBook(BookRecordsDTO book) {
         this.book = book;
     }
 
@@ -45,11 +45,11 @@ public class ReservationDTO {
         this.id = id;
     }
 
-    public UserDTO getUser() {
+    public UserRecordsDTO getUser() {
         return user;
     }
 
-    public void setUser(UserDTO user) {
+    public void setUser(UserRecordsDTO user) {
         this.user = user;
     }
 
@@ -62,7 +62,7 @@ public class ReservationDTO {
     }
 
     @ManyToOne
-    private Books book;
+    private BookRecordsDTO book;
 
     private LocalDate reservationDate;
 

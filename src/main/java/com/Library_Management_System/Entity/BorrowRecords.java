@@ -5,20 +5,31 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 import com.Library_Management_System.DTOs.UserDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "borrow_records")
 public class BorrowRecords {
-        @Id
+	
+	
+    @Override
+	public String toString() {
+		return "BorrowRecords [id=" + borrow_records_id + ", user=" + user + ", book=" + book + ", issueDate=" + issueDate
+				+ ", dueDate=" + dueDate + ", returnDate=" + returnDate + ", fineAmount=" + fineAmount + "]";
+	}
+
+		@Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+        private Long borrow_records_id;
         @ManyToOne
+        @JoinColumn(name="user_id")
+        @JsonIgnore
         private Users user;
         @ManyToOne
         private Books book;
 
     public BorrowRecords(Long id, Users user, Books book, LocalDate issueDate, LocalDate dueDate, LocalDate returnDate, long fineAmount) {
-        this.id = id;
+        this.borrow_records_id = id;
         this.user = user;
         this.book = book;
         this.issueDate = issueDate;
@@ -31,11 +42,11 @@ public class BorrowRecords {
     }
 
     public Long getId() {
-        return id;
+        return borrow_records_id;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.borrow_records_id = id;
     }
 
     public Users getUser() {
@@ -85,12 +96,11 @@ public class BorrowRecords {
     public void setFineAmount(long fineAmount) {
         this.fineAmount = fineAmount;
     }
-
-    	private LocalDate issueDate;
-        private LocalDate dueDate;
-        private LocalDate returnDate;
-
-        private long fineAmount;
+    
+    private LocalDate issueDate;
+    private LocalDate dueDate;
+    private LocalDate returnDate;
+    private long fineAmount;
 
 }
 

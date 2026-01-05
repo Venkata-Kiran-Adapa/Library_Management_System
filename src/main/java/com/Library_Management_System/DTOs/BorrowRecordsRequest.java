@@ -6,7 +6,4 @@ public class BorrowRecordsRequest {
 
 	public Long userId;
     public Long bookId;
-    public LocalDate issueDate;
-    public LocalDate dueDate;
-
 }

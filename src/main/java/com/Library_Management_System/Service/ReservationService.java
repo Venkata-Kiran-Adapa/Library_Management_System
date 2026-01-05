@@ -1,6 +1,7 @@
 package com.Library_Management_System.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -8,10 +9,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.Library_Management_System.DTOs.BorrowRecordsDTO;
 import com.Library_Management_System.DTOs.ReservationDTO;
-import com.Library_Management_System.DTOs.UserDTO;
 import com.Library_Management_System.Entity.Books;
-import com.Library_Management_System.Entity.BorrowRecords;
 import com.Library_Management_System.Entity.Reservation;
 import com.Library_Management_System.Entity.Users;
 import com.Library_Management_System.Exception_Handling.NotFoundException;
@@ -26,9 +26,15 @@ public class ReservationService {
 	
 	 @Autowired
 	 private UsersRepo usersRepository;
+	 
+	 @Autowired
+	 private UserService userService;
 
      @Autowired
      private BooksRepo booksRepository;
+     
+     @Autowired
+     private BorrowRecordsService borrowRecordsService;
      
      @Autowired
      private ReservationRepo reservationRepo;
@@ -36,24 +42,28 @@ public class ReservationService {
      @Autowired
      ObjectMapper objectMapper;
      
-
-
 	public ReservationDTO addNewReservation(Long userId, Long bookId, LocalDate reservationDate) throws NotFoundException {
-		if (reservationDate.isBefore(LocalDate.now())) {
-		    throw new NotFoundException("Reservation date must be today or in the future.");
-		}
 		 Users user = usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 	     Books book = booksRepository.findById(bookId).orElseThrow(() -> new NotFoundException("Book not found"));
+	     if(!book.getBook_availability()) {
+	    	 throw new NotFoundException("Book is not available..!");
+	     }
 		 Reservation reservation=new Reservation();
 		 reservation.setBook(book);
 		 reservation.setUser(user);
-		 reservation.setReservationDate(reservationDate);
+		 LocalDate effectiveReservationDate = (reservationDate != null) ? reservationDate : LocalDate.now(); 
+		 if (effectiveReservationDate.isBefore(LocalDate.now())) {
+		        throw new NotFoundException("Reservation date must be today or in the future.");
+		    }
+		 reservation.setReservationDate(effectiveReservationDate);
 		 Reservation savedReservation=reservationRepo.save(reservation);
+		 Map<String, Object> saveInUser=new HashMap<String, Object>();
+	     saveInUser.put("reservationRecords",reservation);
+	     userService.modifyUser(user.getUser_id(), saveInUser);  
+         borrowRecordsService.addNewRecord(userId, bookId,effectiveReservationDate);
 		 return new ReservationDTO(savedReservation);
-	}
-
-
-
+	}  
+    
 	public Optional<ReservationDTO> getById(long id) throws NotFoundException {
 		if(reservationRepo.existsById(id)) {
 			return  reservationRepo.findById(id).map(ReservationDTO::new);
@@ -90,7 +100,6 @@ public class ReservationService {
             existingRecord.setBook(book);
             partialRecord.remove("bookId");
         }
-        
         Reservation patchedRecord = apply(existingRecord, partialRecord);
         Reservation savedReservation=reservationRepo.save(patchedRecord);
         return new ReservationDTO(savedReservation);
@@ -106,6 +115,9 @@ public class ReservationService {
 	  public ReservationDTO deleteById(Long id) throws NotFoundException {
 	        if(reservationRepo.existsById(id)) {
 	            Optional<ReservationDTO> record = reservationRepo.findById(id).map(ReservationDTO::new);
+	            Books book = booksRepository.findById(record.get().getBook().getBook_id()).orElseThrow(() -> new NotFoundException("Book not found"));
+	            book.setBook_availability(true);
+	            borrowRecordsService.changeReturnDate(record.get().getUser().getUser_id(), book.getBook_id());
 	            reservationRepo.deleteById(id);
 	            return record.get();
 	        }

@@ -5,21 +5,31 @@ import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.Library_Management_System.Enums.Role;
 
+import java.util.List;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Entity
 public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long user_id;
+	private Long user_id;
     private String user_name;
     @Column(unique = true)
     private String userEmail;
-
 	@JsonIgnore
 	private String password;
-
+	
+	@OneToMany( mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
+	private List<BorrowRecords> borrowRecords=new ArrayList<>();
+	
+	@OneToMany( mappedBy = "user",cascade = CascadeType.ALL)
+	private List<Reservation> reservation=new ArrayList<>();
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	private List<Books> books=new ArrayList<>();
+	
 
     public Role getRole() {
         return role;
@@ -31,7 +41,31 @@ public class Users {
 
    
 
-    public String getUser_name() {
+    public List<BorrowRecords> getBorrowRecords() {
+		return borrowRecords;
+	}
+
+	public void setBorrowRecords(BorrowRecords borrowRecords) {
+		this.borrowRecords.add(borrowRecords);
+	}
+
+	public List<Reservation> getReservation() {
+		return reservation;
+	}
+
+	public void setReservation(Reservation reservation) {
+		this.reservation.add(reservation);
+	}
+
+	public List<Books> getBooks() {
+		return books;
+	}
+
+	public void setBooks(Books books) {
+		this.books.add(books);
+	}
+
+	public String getUser_name() {
         return user_name;
     }
 
